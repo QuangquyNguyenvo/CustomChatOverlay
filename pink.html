@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Chat UwU!</title>
+    <script src="https://socialstream.ninja/libs/colours.js" type="text/javascript"></script>
+    <link rel="canonical" href="https://socialstream.ninja/">
+    <meta name="generator" content="Social Stream Ninja - https://github.com/steveseguin/social_stream">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+#chat-container {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 450px;
+    height: 100vh;
+    overflow: hidden;
+    padding: 0 10px 20px 10px;
+    box-sizing: border-box;
+    z-index: 2;
+}
+
+#message-list-wrapper {
+    width: 100%;
+    transition: transform 0.5s ease-out;
+}
+
+.message {
+    background: linear-gradient(135deg, #fef7ff, #fde8f0);
+    border: 2px solid #f8bbd9;
+    border-radius: 25px;
+    margin-bottom: 15px;
+    padding: 18px 22px;
+    position: relative;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 6px 20px rgba(248, 187, 217, 0.25);
+    animation: slideIn 0.5s ease-out;
+    transform-origin: center bottom;
+    min-height: 70px;
+    color: #8b4a6b;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.deco-sparkle {
+    position: absolute;
+    font-size: 1rem;
+    color: #f9c5e0;
+    opacity: 0;
+    animation: sparkle-fade 5s infinite ease-in-out;
+}
+
+.deco-sparkle.s1 { top: -10px; left: -10px; animation-delay: 0s; }
+.deco-sparkle.s2 { bottom: -10px; right: -10px; animation-delay: 2.5s; }
+
+@keyframes sparkle-fade {
+    0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+    50% { opacity: 0.9; transform: scale(1.2) rotate(180deg); }
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.message::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 15px;
+    width: 16px;
+    height: 16px;
+    background: #f8bbd9;
+    border-radius: 50% 50% 50% 0;
+    box-shadow: 2px 2px 4px rgba(248, 187, 217, 0.3);
+    animation: heartbeat-left 1.5s infinite ease-out;
+    transform: rotate(-45deg);
+}
+
+.message::after {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 28px;
+    width: 16px;
+    height: 16px;
+    background: #f8bbd9;
+    border-radius: 50% 50% 50% 0;
+    box-shadow: 2px 2px 4px rgba(248, 187, 217, 0.3);
+    animation: heartbeat-left 1.5s infinite ease-out;
+    animation-delay: 0.1s;
+    transform: rotate(-45deg);
+}
+
+@keyframes heartbeat-left {
+    0%, 100% { transform: scale(1) rotate(-45deg); }
+    50% { transform: scale(1.2) rotate(-45deg); }
+}
+
+.name {
+    color: #b366a3 !important;
+    font-family: 'Nunito', sans-serif !important;
+    text-shadow: 
+        -1px -1px 0 rgba(255,255,255,0.8),  
+         1px -1px 0 rgba(255,255,255,0.8),
+        -1px  1px 0 rgba(255,255,255,0.8),
+         1px  1px 0 rgba(255,255,255,0.8),
+         1px 1px 3px rgba(248,187,217,0.3) !important;
+    font-weight: 700 !important;
+    font-size: 17px !important;
+    margin-bottom: 8px !important;
+    letter-spacing: 0.5px !important;
+    display: block !important;
+}
+
+.text {
+    color: #8b4a6b !important;
+    font-family: 'Nunito', sans-serif !important;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.5) !important;
+    font-weight: 400 !important;
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+    word-wrap: break-word !important;
+}
+
+.message:hover {
+    transform: scale(1.03);
+    border-color: #e6b3cc;
+    box-shadow: 0 8px 25px rgba(248, 187, 217, 0.4);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.avatar-wrapper, .name-bg, .source-icon, .badge, .donation, .membership-status, .large-image { 
+    display: none !important; 
+}
+
+#spacer {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border: none;
+    box-sizing: border-box;
+    background: transparent;
+    opacity: 1;
+    transform: none;
+    transition: none;
+}
+
+#chatAudio {
+    display: none;
+}
+</style>
+</head>
+<body>
+
+<div id="chat-container">
+    <div id="message-list-wrapper">
+		<div id="spacer" style="height: 2200px; width: 100%;"></div>
+    </div>
+</div>
+
+<audio id="chatAudio" preload="auto">
+    <source src="chat_sound.mp3" type="audio/mpeg">
+    <source src="chat_sound.wav" type="audio/wav">
+    <source src="chat_sound.ogg" type="audio/ogg">
+</audio>
+
+<script>
+    var urlParams = new URLSearchParams(window.location.search);
+    var roomID = "session key cua ban UwU"; //nhập session key của bạn vào đây >.< (thường có dạng session=xxxxxxxxxx&v thì copy toàn bộ cái xxxx đó và paste vào)
+    
+    if (urlParams.has("session")) {
+        roomID = urlParams.get("session"); 
+    }
+
+    var password = "false";
+    var featuredMode = false;
+
+    const chatContainer = document.getElementById('chat-container');
+    const messageListWrapper = document.getElementById('message-list-wrapper');
+    const topSpacer = document.getElementById('spacer');
+	const messageTimestamps = new Map();
+    const MAX_SPACER_HEIGHT_BEFORE_RESET = 18000000; 
+
+    const chatAudio = document.getElementById('chatAudio');
+    let audioEnabled = false;
+    let initialNotificationShown = false;
+
+    function phatAmThanhChat() {
+        if (!audioEnabled) {
+            return;
+        }
+        
+        try {
+            chatAudio.currentTime = 0;
+            chatAudio.volume = 1.0;
+            const playPromise = chatAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    audioEnabled = false;
+                });
+            }
+        } catch (error) {
+            audioEnabled = false;
+        }
+    }
+
+    function xoaThongBaoAmThanh() {
+        const notification = document.getElementById('thong-bao-am-thanh-da-bat');
+        if (notification) {
+            notification.parentNode.removeChild(notification);
+        }
+        document.removeEventListener('click', xoaThongBaoAmThanh, true);
+    }
+
+    function hienThiThongBaoAmThanhDaBat() {
+        const existingNotification = document.getElementById('thong-bao-am-thanh-da-bat');
+        if (existingNotification) return;
+
+        const notification = document.createElement('div');
+        notification.id = 'thong-bao-am-thanh-da-bat';
+        notification.innerHTML = '🔊 Đã bật âm thanh thông báo!';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(248, 187, 217, 0.9);
+            color: #8b4a6b;
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 800;
+            font-size: 14px;
+            z-index: 9999;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: slideInNotification 0.5s ease-out forwards;
+            cursor: pointer;
+        `;
+        
+        if (!document.getElementById('notification-style')) {
+            const style = document.createElement('style');
+            style.id = 'notification-style';
+            style.textContent = `
+                @keyframes slideInNotification {
+                    from { opacity: 0; transform: translateX(100%); }
+                    to { opacity: 1; transform: translateX(0); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            document.addEventListener('click', xoaThongBaoAmThanh, true);
+        }, 100);
+    }
+    
+    function kichHoatAmThanhKhiTuongTac() {
+        if (audioEnabled) return;
+
+        const enableAudio = () => {
+            chatAudio.volume = 1.0;
+            chatAudio.currentTime = 0;
+            
+            const testPlay = chatAudio.play();
+            if (testPlay !== undefined) {
+                testPlay.then(() => {
+                    chatAudio.pause();
+                    chatAudio.currentTime = 0;
+                    audioEnabled = true;
+                    
+                    document.removeEventListener('click', enableAudio, true);
+                    document.removeEventListener('keydown', enableAudio, true);
+                    document.removeEventListener('touchstart', enableAudio, true);
+                    document.removeEventListener('mousedown', enableAudio, true);
+                    
+                    hienThiThongBaoAmThanhDaBat();
+                    
+                }).catch(e => {});
+            }
+        };
+        
+        document.addEventListener('click', enableAudio, true);
+        document.addEventListener('keydown', enableAudio, true);  
+        document.addEventListener('touchstart', enableAudio, true);
+        document.addEventListener('mousedown', enableAudio, true);
+    }
+
+    function hienThiThongBaoBanDau() {
+        if (initialNotificationShown) return;
+        initialNotificationShown = true;
+
+        const notification = document.createElement('div');
+        notification.innerHTML = '🌸 Nhấn vào bất kỳ đâu để bật âm thanh thông báo! 💕';
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #fef7ff, #fde8f0);
+            color: #8b4a6b;
+            padding: 15px 25px;
+            border: 2px solid #f8bbd9;
+            border-radius: 20px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            z-index: 9999;
+            box-shadow: 0 8px 25px rgba(248, 187, 217, 0.4);
+            animation: kawaii-bounce-fade 4s ease-out forwards;
+            text-align: center;
+            max-width: 350px;
+            pointer-events: none;
+        `;
+        
+        if (!document.getElementById('kawaii-notification-style')) {
+            const style = document.createElement('style');
+            style.id = 'kawaii-notification-style';
+            style.textContent = `
+                @keyframes kawaii-bounce-fade {
+                    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+                    12% { transform: translate(-50%, -50%) scale(1.1); }
+                    25% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 4000);
+    }
+
+    window.addEventListener('load', () => {
+        kichHoatAmThanhKhiTuongTac();
+        
+        chatAudio.play().then(() => {
+            chatAudio.pause();
+            chatAudio.currentTime = 0;
+            audioEnabled = true;
+        }).catch(e => {
+            hienThiThongBaoBanDau();
+        });
+    });
+
+    function adjustMessageWrapperScroll() {
+        requestAnimationFrame(() => {
+            const wrapperScrollHeight = messageListWrapper.scrollHeight;
+            const containerClientHeight = chatContainer.clientHeight;
+            
+            let translateY = 0;
+            if (wrapperScrollHeight > containerClientHeight) {
+                translateY = -(wrapperScrollHeight - containerClientHeight);
+            }
+            translateY = Math.min(0, translateY);
+
+            messageListWrapper.style.transform = `translateY(${translateY}px)`;
+        });
+    }
+	
+    function stripHtml(html){
+        let tmp = document.createElement("DIV");
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || "";
+    }
+
+    function addMessageToOverlay(data) {
+		if (!data.chatname && !data.chatmessage && !data.hasDonation && !data.donation && !data.contentimg){
+			return;
+		}
+		
+        phatAmThanhChat();
+        
+		const messageDiv = document.createElement('div');
+		messageDiv.classList.add('message');
+		
+		const messageId = data.mid || 'msg-' + Date.now();
+		messageDiv.id = messageId;
+		
+        const sparkle1 = document.createElement('span');
+        sparkle1.className = 'deco-sparkle s1';
+        sparkle1.textContent = '✨';
+        
+        const sparkle2 = document.createElement('span');
+        sparkle2.className = 'deco-sparkle s2';
+        sparkle2.textContent = '🌸';
+
+        messageDiv.appendChild(sparkle1);
+        messageDiv.appendChild(sparkle2);
+		
+		const nameHtml = data.chatname ? `<div class="name">${data.chatname}</div>` : '';
+		
+        const cleanMessage = data.chatmessage ? stripHtml(data.chatmessage) : '';
+		const messageTextHtml = `<div class="text">${cleanMessage}</div>`;
+		
+        const contentDiv = document.createElement('div');
+        contentDiv.innerHTML = `
+            ${nameHtml}
+            ${messageTextHtml}
+        `;
+        messageDiv.appendChild(contentDiv);
+
+		messageListWrapper.appendChild(messageDiv);
+		
+		adjustMessageWrapperScroll();
+	}
+
+    var iframe = document.createElement("iframe");
+    if (featuredMode){
+        iframe.src = `https://vdo.socialstream.ninja/?ln&password=${password}&salt=vdo.ninja&label=overlay&exclude=${roomID}&scene&novideo&noaudio&cleanoutput&room=${roomID}`;
+    } else {
+        iframe.src = "https://vdo.socialstream.ninja/?ln&salt=vdo.ninja&password="+password+"&push&label=dock&vd=0&ad=0&novideo&noaudio&autostart&cleanoutput&room="+roomID; 
+    }
+    iframe.style.cssText = "width: 0px; height: 0px; position: fixed; left: -100px; top: -100px;";
+    document.body.appendChild(iframe);
+    window.addEventListener("message", function (e) {
+        if (e.source != iframe.contentWindow) return;
+        if (e.data.dataReceived && e.data.dataReceived.overlayNinja) {
+            addMessageToOverlay(e.data.dataReceived.overlayNinja);
+        }
+    });
+    
+    var conCon = 1;
+    var socketserver = false;
+    var serverURL = urlParams.has("localserver") ? "ws://127.0.0.1:3000" : "wss://io.socialstream.ninja";
+
+    function setupSocket(){
+        socketserver.onclose = function (){
+            setTimeout(function(){
+                conCon+=1;
+                socketserver = new WebSocket(serverURL);
+                setupSocket();
+            },100*conCon);
+        };
+        socketserver.onopen = function (){
+            conCon = 1;
+            socketserver.send(JSON.stringify({"join":roomID, "out":3, "in":4}));
+        };
+        socketserver.addEventListener('message', function (event) {
+            if (event.data){
+                try {
+                    var data = JSON.parse(event.data);
+                    if (data) { 
+                        addMessageToOverlay(data);
+                    }
+                } catch (error) {
+                }
+            }
+        });
+    }
+    
+    if (urlParams.has("server") || urlParams.has("server2")){
+        serverURL = urlParams.get("server") ||  urlParams.get("server2") || serverURL;
+        socketserver = new WebSocket(serverURL);
+        setupSocket();
+    }
+</script>
+</body>
+</html>
